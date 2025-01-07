@@ -29,8 +29,8 @@ class Project(SQLModel, table=True):
 #     project_id: Project
 
 
-# class Collaborator(SQLModel, table=True):
-#     id: int | None
-#     name: int
-#     email: str
-#     function: str
+class Collaborator(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str
+    email: str
+    function: str
