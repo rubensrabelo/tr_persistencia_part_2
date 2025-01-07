@@ -42,7 +42,7 @@ async def update(project_id: int, update_project: Project,
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Project not found.")
-    for key, value in update_project.dict(exclude_unset=True).items():
+    for key, value in update_project.model_dump().items():
         setattr(project, key, value)
     session.add(project)
     session.commit()
@@ -59,4 +59,4 @@ async def delete(project_id: int,
                             detail="Project not found.")
     session.delete(project)
     session.commit()
-    return {"message": "Project successfully deleted."}
+    return {"Message": "Project successfully deleted."}
