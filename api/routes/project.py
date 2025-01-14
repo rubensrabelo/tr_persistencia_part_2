@@ -3,8 +3,9 @@ from sqlmodel import Session, select
 from sqlalchemy.orm import joinedload
 from starlette import status
 
-from models.project import Project, ProjectWithTask
 from database import get_session
+from models.project import Project, ProjectWithTask
+from models.task import Task, TaskWithProjectAndCollaborator
 
 router = APIRouter()
 
@@ -70,26 +71,58 @@ async def delete_project(project_id: int,
 
 
 # Tasks
-@router.post()
-async def create_task():
+@router.post("/{project_id}/tasks/",
+             response_model=Task)
+async def create_task_for_project(project_id: int,
+                                  task: Task,
+                                  session: Session = Depends(get_session)
+                                  ) -> Task:
+    task.project_id = project_id
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    return task
+
+
+@router.get("/{project_id}/tasks/",
+            response_model=list[TaskWithProjectAndCollaborator])
+async def find_all_task_by_post_id(project_id: int,
+                                   offset: int = Query(default=0, ge=0),
+                                   limit: int = Query(default=10, le=100),
+                                   session: Session = Depends(get_session)
+                                   ) -> list[TaskWithProjectAndCollaborator]:
+    statement = (select(Task).offset(offset).limit(limit)
+                 .where(Task.project_id == project_id)
+                 .options(joinedload(Task.collaborators)))
+    tasks_by_project = session.exec(statement).unique().all()
+    return tasks_by_project
+
+
+@router.get("/tasks/{task_id}",
+            response_model=TaskWithProjectAndCollaborator)
+async def find_task_by_id(task_id: int,
+                          session: Session = Depends(get_session)
+                          ) -> TaskWithProjectAndCollaborator:
+    statement = (select(Task).where(Task.id == task_id)
+                 .options(joinedload(Task.project),
+                          joinedload(Task.collaborators)))
+    task = session.exec(statement).first()
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Task not found.")
+    return task
+
+
+@router.put("/{project_id}/tasks/{task_id}", response_model=Task)
+async def update_task(project_id: int,
+                      task_id: int,
+                      task: Task,
+                      session: Session = Depends(get_session)) -> Task:
     ...
 
 
-@router.get()
-async def find_all_task_by_post_id():
-    ...
-
-
-@router.get()
-async def find_task_by_id():
-    ...
-
-
-@router.put()
-async def update_task():
-    ...
-
-
-@router.delete
-async def delete_task():
+@router.delete("/{project_id}/task/{task_id}", response_model=dict)
+async def delete_task(project_id: int,
+                      task_id: int,
+                      session: Session = Depends(get_session)) -> dict:
     ...
