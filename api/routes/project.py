@@ -50,7 +50,7 @@ async def update_project(project_id: int, update_project: Project,
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Project not found.")
-    for key, value in update_project.model_dump().items():
+    for key, value in update_project.model_dump(exclude_unset=True).items():
         setattr(project, key, value)
     session.add(project)
     session.commit()
@@ -118,11 +118,26 @@ async def update_task(project_id: int,
                       task_id: int,
                       task: Task,
                       session: Session = Depends(get_session)) -> Task:
-    ...
+    task = session.get(Task, task_id)
+    if not task or task.project_id != project_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Task not found")
+    for key, value in task.model_dump(exclude_unset=True).items:
+        setattr(task, key, value)
+    session.add(task)
+    session.commit()
+    session.refresh(task)
+    return task
 
 
 @router.delete("/{project_id}/task/{task_id}", response_model=dict)
 async def delete_task(project_id: int,
                       task_id: int,
                       session: Session = Depends(get_session)) -> dict:
-    ...
+    task = session.get(Task, task_id)
+    if not task or task.project_id != project_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Task not found")
+    session.delete(task)
+    session.commit()
+    return {"Message": "Task successfully deleted."}
