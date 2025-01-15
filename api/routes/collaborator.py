@@ -43,7 +43,7 @@ async def find_all(skip: int = 0, limit: int = 10,
                    session: Session = Depends(get_session)
                    ) -> list[Collaborator]:
     statement = select(Collaborator).offset(skip).limit(limit)
-    collaborators = session.exec(statement).all
+    collaborators = session.exec(statement).all()
     return collaborators
 
 
