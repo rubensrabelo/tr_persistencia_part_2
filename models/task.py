@@ -1,7 +1,10 @@
-from datetime import date
+from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
+from typing import TYPE_CHECKING
 from .project import Project
-from .collaborator import Collaborator
+
+if TYPE_CHECKING:
+    from .collaborator import Collaborator
 
 
 class Assignment(SQLModel, table=True):
@@ -14,19 +17,20 @@ class TaskBase(SQLModel):
     id: int | None = Field(default=None, primary_key=True)
     name: str
     description: str
-    start_date: date = Field(default_factory=date.today)
-    end_date: date | None = Field(default=None)
-    completion_prediction: date
+    start_date: datetime = Field(default_factory=lambda:
+                                 datetime.now(timezone.utc))
+    end_date: datetime | None = Field(default=None)
+    completion_prediction: datetime
     status: str
 
 
 class Task(TaskBase, table=True):
     project_id: int = Field(foreign_key="project.id")
     project: "Project" = Relationship(back_populates="tasks")
-    collaborators = list["Collaborator"] = Relationship(back_populates="tasks",
-                                                        link_model=Assignment)
+    collaborators: list["Collaborator"] = Relationship(back_populates="tasks",
+                                                       link_model=Assignment)
 
 
 class TaskWithProjectAndCollaborator(TaskBase):
-    project: "Project" | None
+    project: Project | None
     collaborators: list["Collaborator"] = None
