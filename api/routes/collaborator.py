@@ -3,8 +3,9 @@ from fastapi import HTTPException, Depends
 from sqlmodel import Session, select
 from starlette import status
 
-from models import Collaborator
 from database import get_session
+from models.collaborator import Collaborator
+from models.task import Task, Assignment
 
 router = APIRouter()
 
@@ -16,6 +17,25 @@ async def create(collaborator: Collaborator,
     session.commit()
     session.refresh(collaborator)
     return collaborator
+
+
+@router.post("/{collaborator_id}/task/{task_id}", response_model=dict)
+async def add_collaborator_in_task(collaborator_id: int,
+                                   task_id: int,
+                                   session: Session = Depends(get_session)
+                                   ) -> dict:
+    collaborator = session.get(Collaborator, collaborator_id)
+    if not collaborator:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Collaborator not found.")
+    task = session.get(Task, task_id)
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Task not found.")
+    assignment = Assignment(task_id=task_id, collaborator_id=collaborator_id)
+    session.add(assignment)
+    session.commit()
+    return {"Message": "Collaborator added successfully"}
 
 
 @router.get("/", response_model=Collaborator)
