@@ -35,7 +35,7 @@ async def find_project_by_id(project_id: int,
                              session: Session = Depends(get_session)
                              ) -> ProjectWithTask:
     statement = (select(Project).where(Project.id == project_id)
-                 .options(joinedload(Project.task)))
+                 .options(joinedload(Project.tasks)))
     project = session.exec(statement).first()
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -58,7 +58,7 @@ async def update_project(project_id: int, update_project: Project,
     return project
 
 
-@router.delete("/{project_id}", response_model=Project)
+@router.delete("/{project_id}", response_model=dict)
 async def delete_project(project_id: int,
                          session: Session = Depends(get_session)) -> dict:
     project = session.get(Project, project_id)
@@ -122,7 +122,7 @@ async def update_task(project_id: int,
     if not task or task.project_id != project_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Task not found")
-    for key, value in task.model_dump(exclude_unset=True).items:
+    for key, value in task.model_dump(exclude_unset=True).items():
         setattr(task, key, value)
     session.add(task)
     session.commit()
