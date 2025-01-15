@@ -1,5 +1,4 @@
-from fastapi import APIRouter
-from fastapi import HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import Session, select
 from starlette import status
 
@@ -32,13 +31,24 @@ async def add_collaborator_in_task(collaborator_id: int,
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Task not found.")
+    statement = (select(Assignment)
+                 .where(Assignment.task_id == task_id,
+                        Assignment.collaborator_id == collaborator_id))
+    exist_assignment = session.exec(statement).first()
+    if exist_assignment:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Collaborator is already assigned.")
     assignment = Assignment(task_id=task_id, collaborator_id=collaborator_id)
     session.add(assignment)
     session.commit()
-    return {"Message": "Collaborator added successfully"}
+    return {
+        "Message": "Collaborator added to task successfully.",
+        "task_id": assignment.task_id,
+        "collaborator_id": assignment.collaborator_id,
+    }
 
 
-@router.get("/", response_model=Collaborator)
+@router.get("/", response_model=list[Collaborator])
 async def find_all(skip: int = 0, limit: int = 10,
                    session: Session = Depends(get_session)
                    ) -> list[Collaborator]:
@@ -66,7 +76,7 @@ async def update(collaborator_id: int,
     if not collaborator:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Collaborator not found.")
-    for key, value in collaborator_update.model_dump().items:
+    for key, value in collaborator_update.model_dump(exclude_unset=True).items:
         setattr(collaborator, key, value)
 
     session.add(collaborator)
@@ -75,7 +85,7 @@ async def update(collaborator_id: int,
     return collaborator
 
 
-@router.delete("/{collaborator_id}", response_model=Collaborator)
+@router.delete("/{collaborator_id}", response_model=dict)
 async def delete(collaborator_id: int,
                  session: Session = Depends(get_session)
                  ) -> dict:
