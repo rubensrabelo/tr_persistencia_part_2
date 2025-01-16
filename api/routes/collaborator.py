@@ -12,35 +12,41 @@ router = APIRouter()
 @router.post("/", response_model=Collaborator)
 async def create(collaborator: Collaborator,
                  session: Session = Depends(get_session)) -> Collaborator:
+    statement = select(Collaborator).where(Collaborator.email ==
+                                           collaborator.email)
+    collaborator_exist = session.exec(statement).first()
+    if collaborator_exist:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="This email already exists.")
     session.add(collaborator)
     session.commit()
     session.refresh(collaborator)
     return collaborator
 
 
-@router.post("/{collaborator_id}/task/{task_id}", response_model=dict)
-async def add_collaborator_in_task(collaborator_id: int,
-                                   task_id: int,
+@router.post("/Assignment", response_model=dict)
+async def add_collaborator_in_task(assignment: Assignment,
                                    session: Session = Depends(get_session)
                                    ) -> dict:
-    collaborator = session.get(Collaborator, collaborator_id)
+    collaborator = session.get(Collaborator, assignment.collaborator_id)
     if not collaborator:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Collaborator not found.")
-    task = session.get(Task, task_id)
+    task = session.get(Task, assignment.task_id)
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Task not found.")
     statement = (select(Assignment)
-                 .where(Assignment.task_id == task_id,
-                        Assignment.collaborator_id == collaborator_id))
+                 .where(Assignment.task_id == assignment.task_id,
+                        Assignment.collaborator_id ==
+                        assignment.collaborator_id))
     exist_assignment = session.exec(statement).first()
     if exist_assignment:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Collaborator is already assigned.")
-    assignment = Assignment(task_id=task_id, collaborator_id=collaborator_id)
     session.add(assignment)
     session.commit()
+    session.refresh(assignment)
     return {
         "Message": "Collaborator added to task successfully.",
         "task_id": assignment.task_id,
