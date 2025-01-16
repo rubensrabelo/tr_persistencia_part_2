@@ -1,26 +1,22 @@
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
 from typing import TYPE_CHECKING
-from .project import Project
+from .collaborator import Collaborator
+from .assignment import Assignment
 
 if TYPE_CHECKING:
-    from .collaborator import Collaborator
-
-
-class Assignment(SQLModel, table=True):
-    task_id: int = Field(default=None, foreign_key="task.id", primary_key=True)
-    collaborator_id: int = Field(default=None, foreign_key="collaborator.id",
-                                 primary_key=True)
+    from .project import Project
 
 
 class TaskBase(SQLModel):
     id: int | None = Field(default=None, primary_key=True)
     name: str
     description: str
-    start_date: datetime = Field(default_factory=lambda:
-                                 datetime.now(timezone.utc))
-    end_date: datetime | None = Field(default=None)
-    completion_prediction: datetime
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc))
+    status: str
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc))
     status: str
 
 
@@ -32,5 +28,5 @@ class Task(TaskBase, table=True):
 
 
 class TaskWithProjectAndCollaborator(TaskBase):
-    project: Project | None
+    # project: Project | None
     collaborators: list["Collaborator"] = None

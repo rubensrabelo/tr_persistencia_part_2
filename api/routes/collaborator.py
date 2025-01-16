@@ -24,7 +24,7 @@ async def create(collaborator: Collaborator,
     return collaborator
 
 
-@router.post("/Assignment", response_model=dict)
+@router.post("/assignment", response_model=dict)
 async def add_collaborator_in_task(assignment: Assignment,
                                    session: Session = Depends(get_session)
                                    ) -> dict:
@@ -82,7 +82,7 @@ async def update(collaborator_id: int,
     if not collaborator:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Collaborator not found.")
-    for key, value in collaborator_update.model_dump(exclude_unset=True).items:
+    for key, value in collaborator_update.model_dump(exclude_unset=True).items():
         setattr(collaborator, key, value)
 
     session.add(collaborator)

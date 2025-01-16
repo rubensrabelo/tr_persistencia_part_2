@@ -1,5 +1,10 @@
 from sqlmodel import SQLModel, Field, Relationship
-from .task import Task, Assignment
+from typing import TYPE_CHECKING
+
+from .assignment import Assignment
+
+if TYPE_CHECKING:
+    from .task import Task
 
 
 class CollaboratorBase(SQLModel):
