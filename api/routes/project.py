@@ -22,12 +22,7 @@ async def create_project(project: Project,
     return project
 
 
-# Listar os títulos de projetos cujo título contém determinada string.
-# Mostrar a quantidade total de projetos cadastrados.
-# Mostrar a quantidade total de projetos cadastrados por status.
-# Mostrar a quantidade de  tarefas.
-# Mostrar projetos com a quantidade de tarefas estipulada.
-# Mostrar todas os projetos
+# Listar todos os projetos
 @router.get("/", response_model=list[ProjecBaseWithTask])
 async def find_all_project(offset: int = Query(default=0, ge=0),
                            limit: int = Query(default=10, le=100),
@@ -39,7 +34,7 @@ async def find_all_project(offset: int = Query(default=0, ge=0),
     return projects
 
 
-# Mostrar um projeto mandando o id
+# Mostrar um projeto por id
 @router.get("/{project_id}", response_model=ProjecBaseWithTask)
 async def find_project_by_id(project_id: int,
                              session: Session = Depends(get_session)
@@ -55,15 +50,31 @@ async def find_project_by_id(project_id: int,
 
 # Listar os títulos de projetos lançados em determinado ano.
 @router.get("/titles/{year}", response_model=list[str])
-async def project_by_year(year: int,
-                          session: Session = Depends(get_session)
-                          ) -> list[str]:
-    statement = select(Project.name).where(func.strftime('%Y', Project.created_at) == str(year))
+async def project_title_by_year(year: int,
+                                session: Session = Depends(get_session)
+                                ) -> list[str]:
+    statement = select(Project.name).where(
+        func.strftime('%Y', Project.created_at) == str(year))
     titles = session.exec(statement).all()
     print(titles)
     if not titles:
         raise HTTPException(status_code=404,
                             detail=f"No projects found for year {year}.")
+    return titles
+
+
+# Listar os títulos de projetos cujo título contém determinada string.
+@router.get("/title-name/search", response_model=list[str])
+async def search_project_titles(name: str,
+                                session: Session = Depends(get_session)
+                                ) -> list[str]:
+    statement = select(Project.name).where(
+        Project.name.ilike(f"%{name}%")
+    )
+    titles = session.exec(statement).all()
+    if not titles:
+        raise HTTPException(status_code=404,
+                            detail=f"No projects found for year {name}.")
     return titles
 
 
@@ -109,10 +120,6 @@ async def create_task_for_project(project_id: int,
     return task
 
 
-# Mostrar a quantidade total de tarefas cadastrados.
-# Mostrar a quantidade total de tarefas cadastrados por status.
-# Mostrar a quantidade de colaborador por tarefas.
-# Mostrar taregas com a quantidade de colaborador estipulada.
 @router.get("/{project_id}/tasks/",
             response_model=list[TaskWithProjectAndCollaborator])
 async def find_all_task_by_post_id(project_id: int,
