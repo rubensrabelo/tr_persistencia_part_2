@@ -19,7 +19,7 @@ router = APIRouter()
 @router.get("/projects/total", response_model=dict)
 async def total_registered_projects(session: Session = Depends(get_session)
                                     ) -> dict:
-    statement = select(func.count(Project.id))
+    statement = (select(func.count(Project.id)))
     total = session.exec(statement).first()
     return {
         "total registered projects": total
@@ -27,7 +27,24 @@ async def total_registered_projects(session: Session = Depends(get_session)
 
 
 # Mostrar a quantidade de tarefas por projetos.
+@router.get("/projects/total/tasks", response_model=dict[str, int])
+async def total_task_by_project(session: Session = Depends(get_session)
+                                ) -> dict[str, int]:
+    statement = (select(Project.name, func.count(Task.id).label("task_count"))
+                 .join(Task, isouter=True)
+                 .group_by(Project.id))
+    result = session.exec(statement).all()
+    result_dict = {project_name: task_count
+                   for project_name, task_count in result}
+    return result_dict
+
+
 # Mostrar a quantidade total de projetos cadastrados por status.
+@router.get("/projects/total/status")
+async def total_projects_by_statu(status: str,
+                                  session: Session = Depends(get_session)):
+    ...
+
 # Mostrar projetos com a quantidade de tarefas estipulada.
 
 # Task
