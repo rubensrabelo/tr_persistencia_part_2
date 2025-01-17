@@ -64,7 +64,7 @@ async def find_all(skip: int = 0, limit: int = 10,
 
 
 # Listar todas as tarefas do colaborador
-# Listar os nomes de atores nascidos em determinado ano.
+# Listar os nomes de colaborador nascidos em determinado ano.
 @router.get("/{collaborator_id}", response_model=Collaborator)
 async def find_by_id(collaborator_id: int,
                      session: Session = Depends(get_session)) -> Collaborator:
