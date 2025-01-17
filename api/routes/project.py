@@ -58,7 +58,7 @@ async def find_project_by_id(project_id: int,
 async def project_by_year(year: int,
                           session: Session = Depends(get_session)
                           ) -> list[str]:
-    statement = select(Project.name).where(func.strftime('%Y', Project.created_at) == str(year) == year)
+    statement = select(Project.name).where(func.strftime('%Y', Project.created_at) == str(year))
     titles = session.exec(statement).all()
     print(titles)
     if not titles:
