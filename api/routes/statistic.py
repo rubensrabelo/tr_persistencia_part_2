@@ -1,14 +1,11 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import Session, select
 from sqlalchemy.sql import func
-from sqlalchemy.orm import joinedload
 from starlette import status
-from datetime import datetime, timezone
 
 from database import get_session
 from models.project import Project
 from models.task import Task
-from models.collaborator import Collaborator
 from models.assignment import Assignment
 
 router = APIRouter()
@@ -61,7 +58,8 @@ async def total_projects_by_status(status_project: str = None,
         }
     else:
         statement = (
-            select(Project.status, func.count(Project.id).label("status_count"))
+            select(Project.status, func.count(Project.id).label(
+                "status_count"))
             .group_by(Project.status))
         result = session.exec(statement).all()
         result_dict = {
@@ -76,7 +74,8 @@ async def total_projects_by_status(status_project: str = None,
 @router.get("/projects/{project_id}/tasks/total/status",
             response_model=dict[str, int])
 async def total_tasks_by_status_and_project_id(project_id: int,
-                                               session: Session = Depends(get_session)
+                                               session: Session = Depends(
+                                                   get_session)
                                                ) -> dict[str, int]:
     project = session.get(Project, project_id)
     if not project:
@@ -99,12 +98,14 @@ async def total_tasks_by_status_and_project_id(project_id: int,
 # Mostrar tarefas com a quantidade de colaborador estipulada
 @router.get("/tasks/total/collaborators/filtered/projects/{project_id}",
             response_model=dict[str, int])
-async def total_collaborators_by_task_and_project(project_id: int,
-                                                  min_collaborators: int = 0,
-                                                  max_collaborators: int | None = None,
-                                                  session: Session = Depends(get_session)
-                                                  ) -> dict[str, int]:
-    count_collaborators = func.count(Assignment.collaborator_id).label("collaborator_count")
+async def total_collaborators_by_task_and_project(
+    project_id: int,
+    min_collaborators: int = 0,
+    max_collaborators: int = None,
+    session: Session = Depends(get_session)
+) -> dict[str, int]:
+    count_collaborators = func.count(Assignment.collaborator_id).label(
+        "collaborator_count")
     statement = (
         select(Task.name, count_collaborators)
         .join(Task, Assignment.task_id == Task.id)
