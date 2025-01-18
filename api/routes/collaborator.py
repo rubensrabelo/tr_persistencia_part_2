@@ -1,10 +1,13 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import Session, select
+from sqlalchemy.orm import joinedload
 from starlette import status
 
 from database import get_session
 from models.collaborator import Collaborator
-from models.task import Task, Assignment
+from models.collaborator_dto import CollaboratorWithTasks
+from models.task import Task
+from models.assignment import Assignment
 
 router = APIRouter()
 
@@ -65,10 +68,13 @@ async def find_all(skip: int = 0, limit: int = 10,
 
 # Listar todas as tarefas do colaborador
 # Listar os nomes de colaborador nascidos em determinado ano.
-@router.get("/{collaborator_id}", response_model=Collaborator)
+@router.get("/{collaborator_id}", response_model=CollaboratorWithTasks)
 async def find_by_id(collaborator_id: int,
-                     session: Session = Depends(get_session)) -> Collaborator:
-    collaborator = session.get(Collaborator, collaborator_id)
+                     session: Session = Depends(get_session)
+                     ) -> CollaboratorWithTasks:
+    statement = (select(Collaborator).where(Collaborator.id == collaborator_id)
+                 .options(joinedload(Collaborator.tasks)))
+    collaborator = session.exec(statement).first()
     if not collaborator:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Collaborator not found.")
