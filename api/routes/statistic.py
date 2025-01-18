@@ -97,3 +97,28 @@ async def total_tasks_by_status_and_project_id(project_id: int,
 
 # Mostrar a quantidade de colaborador por tarefas.
 # Mostrar tarefas com a quantidade de colaborador estipulada
+@router.get("/tasks/total/collaborators/filtered/projects/{project_id}",
+            response_model=dict[str, int])
+async def total_collaborators_by_task_and_project(project_id: int,
+                                                  min_collaborators: int = 0,
+                                                  max_collaborators: int | None = None,
+                                                  session: Session = Depends(get_session)
+                                                  ) -> dict[str, int]:
+    count_collaborators = func.count(Assignment.collaborator_id).label("collaborator_count")
+    statement = (
+        select(Task.name, count_collaborators)
+        .join(Task, Assignment.task_id == Task.id)
+        .join(Project, Project.id == Task.project_id)
+        .filter(Project.id == project_id)
+        .group_by(Task.id)
+        .having(count_collaborators >= min_collaborators)
+    )
+
+    if max_collaborators:
+        statement = statement.having(count_collaborators <= max_collaborators)
+    result = session.exec(statement).all()
+    result_dict = {
+        task_name: collaborator_count
+        for task_name, collaborator_count in result
+        }
+    return result_dict
