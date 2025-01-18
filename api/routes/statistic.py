@@ -27,6 +27,7 @@ async def total_registered_projects(session: Session = Depends(get_session)
 
 
 # Mostrar a quantidade de tarefas por projetos.
+# Mostrar projetos com a quantidade de tarefas estipulada.
 @router.get("/projects/total/tasks", response_model=dict[str, int])
 async def total_task_by_project(session: Session = Depends(get_session)
                                 ) -> dict[str, int]:
@@ -40,15 +41,31 @@ async def total_task_by_project(session: Session = Depends(get_session)
 
 
 # Mostrar a quantidade total de projetos cadastrados por status.
-@router.get("/projects/total/status")
-async def total_projects_by_statu(status: str,
-                                  session: Session = Depends(get_session)):
-    ...
+@router.get("/projects/total/status", response_model=dict)
+async def total_projects_by_status(status_project: str = None,
+                                   session: Session = Depends(get_session)
+                                   ) -> dict:
+    if status_project:
+        statement = (
+            select(func.count(Project.id))
+            .where(Project.status == status_project))
+        result = session.exec(statement).first()
+        return {
+            f"Total {status_project}": result
+        }
+    else:
+        statement = (
+            select(Project.status, func.count(Project.id).label("status_count"))
+            .group_by(Project.status))
+        result = session.exec(statement).all()
+        return {
+            row.status: row.status_count
+            for row in result
+        }
 
-# Mostrar projetos com a quantidade de tarefas estipulada.
 
 # Task
 # Mostrar a quantidade total de tarefas cadastrados por status e por projeto.
 # Mostrar a quantidade de colaborador por tarefas.
-# Mostrar tarefas com a quantidade de colaborador estipulada, 
+# Mostrar tarefas com a quantidade de colaborador estipulada,
 # maior ou menor que...
