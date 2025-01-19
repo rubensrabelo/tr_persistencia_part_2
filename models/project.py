@@ -18,5 +18,5 @@ class ProjectBase(SQLModel):
 class Project(ProjectBase, table=True):
     tasks: list["Task"] = Relationship(
         back_populates="project",
-        cascade="all, delete-orphan"
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
         )
