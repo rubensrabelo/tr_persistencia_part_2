@@ -25,8 +25,3 @@ class Task(TaskBase, table=True):
     project: "Project" = Relationship(back_populates="tasks")
     collaborators: list["Collaborator"] = Relationship(back_populates="tasks",
                                                        link_model=Assignment)
-
-
-class TaskWithProjectAndCollaborator(TaskBase):
-    # project: Project | None
-    collaborators: list["Collaborator"] = None
