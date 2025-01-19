@@ -30,8 +30,12 @@ async def find_all_project(offset: int = Query(default=0, ge=0),
                            limit: int = Query(default=10, le=100),
                            session: Session = Depends(get_session)
                            ) -> list[ProjecBaseWithTask]:
-    statement = (select(Project).offset(offset).limit(limit)
-                 .options(joinedload(Project.tasks)))
+    statement = (
+        select(Project)
+        .offset(offset)
+        .limit(limit)
+        .options(joinedload(Project.tasks))
+        )
     projects = session.exec(statement).unique().all()
     return projects
 

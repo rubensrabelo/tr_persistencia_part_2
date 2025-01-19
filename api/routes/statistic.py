@@ -58,7 +58,8 @@ async def total_projects_by_status(status_project: str = None,
     if status_project:
         statement = (
             select(func.count(Project.id))
-            .where(Project.status == status_project))
+            .where(Project.status == status_project)
+            )
         result = session.exec(statement).first()
         return GeneralResponse(
             description=f"Total projects with status '{status_project}'.",
