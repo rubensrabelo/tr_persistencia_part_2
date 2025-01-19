@@ -176,13 +176,13 @@ async def find_task_by_id(project_id: int,
 @router.put("/{project_id}/tasks/{task_id}", response_model=Task)
 async def update_task(project_id: int,
                       task_id: int,
-                      task: Task,
+                      update_task: Task,
                       session: Session = Depends(get_session)) -> Task:
     task = session.get(Task, task_id)
     if not task or task.project_id != project_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Task not found")
-    for key, value in task.model_dump(exclude_unset=True).items():
+    for key, value in update_task.model_dump(exclude_unset=True).items():
         setattr(task, key, value)
     task.updated_at = datetime.now(timezone.utc)
     session.add(task)
