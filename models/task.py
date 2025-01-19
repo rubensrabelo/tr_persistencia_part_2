@@ -14,7 +14,6 @@ class TaskBase(SQLModel):
     description: str
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc))
-    status: str
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc))
     status: str
@@ -22,6 +21,12 @@ class TaskBase(SQLModel):
 
 class Task(TaskBase, table=True):
     project_id: int = Field(foreign_key="project.id")
-    project: "Project" = Relationship(back_populates="tasks")
-    collaborators: list["Collaborator"] = Relationship(back_populates="tasks",
-                                                       link_model=Assignment)
+    project: "Project" = Relationship(
+        back_populates="tasks",
+        cascade="all, delete-orphan"
+        )
+    collaborators: list["Collaborator"] = Relationship(
+        back_populates="tasks",
+        link_model=Assignment,
+        cascade="all, delete-orphan"
+        )
