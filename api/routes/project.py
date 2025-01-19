@@ -48,23 +48,8 @@ async def find_project_by_id(project_id: int,
     return project
 
 
-# Listar os títulos de projetos lançados em determinado ano.
-@router.get("/titles/{year}", response_model=list[str])
-async def project_title_by_year(year: int,
-                                session: Session = Depends(get_session)
-                                ) -> list[str]:
-    statement = select(Project.name).where(
-        func.strftime('%Y', Project.created_at) == str(year))
-    titles = session.exec(statement).all()
-    print(titles)
-    if not titles:
-        raise HTTPException(status_code=404,
-                            detail=f"No projects found for year {year}.")
-    return titles
-
-
 # Listar os títulos de projetos cujo título contém determinada string.
-@router.get("/title-name/search", response_model=list[str])
+@router.get("/titles/name/search", response_model=list[str])
 async def search_project_titles(name: str,
                                 session: Session = Depends(get_session)
                                 ) -> list[str]:
@@ -75,6 +60,20 @@ async def search_project_titles(name: str,
     if not titles:
         raise HTTPException(status_code=404,
                             detail=f"No projects found for year {name}.")
+    return titles
+
+
+# Listar os títulos de projetos lançados em determinado ano.
+@router.get("/titles/{year}", response_model=list[str])
+async def project_title_by_year(year: int,
+                                session: Session = Depends(get_session)
+                                ) -> list[str]:
+    statement = select(Project.name).where(
+        func.strftime('%Y', Project.created_at) == str(year))
+    titles = session.exec(statement).all()
+    if not titles:
+        raise HTTPException(status_code=404,
+                            detail=f"No projects found for year {year}.")
     return titles
 
 
