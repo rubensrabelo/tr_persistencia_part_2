@@ -113,6 +113,10 @@ async def create_task_for_project(project_id: int,
                                   task: Task,
                                   session: Session = Depends(get_session)
                                   ) -> Task:
+    project = session.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Project not found.")
     task.project_id = project_id
     session.add(task)
     session.commit()
@@ -127,22 +131,35 @@ async def find_all_task_by_post_id(project_id: int,
                                    limit: int = Query(default=10, le=100),
                                    session: Session = Depends(get_session)
                                    ) -> list[TaskWithProjectAndCollaborator]:
-    statement = (select(Task).offset(offset).limit(limit)
+    project = session.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Project not found.")
+    statement = (select(Task)
                  .where(Task.project_id == project_id)
+                 .offset(offset)
+                 .limit(limit)
                  .options(joinedload(Task.collaborators)))
     tasks_by_project = session.exec(statement).unique().all()
     return tasks_by_project
 
 
-@router.get("/tasks/{task_id}",
-            response_model=TaskWithProjectAndCollaborator)
-async def find_task_by_id(task_id: int,
+# Listar tasks por nome
+@router.get("/{project_id}/tasks/{name}",
+            response_model=list[TaskWithProjectAndCollaborator])
+async def find_task_by_id(project_id: int,
+                          name: str,
                           session: Session = Depends(get_session)
-                          ) -> TaskWithProjectAndCollaborator:
-    statement = (select(Task).where(Task.id == task_id)
+                          ) -> list[TaskWithProjectAndCollaborator]:
+    project = session.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Project not found.")
+    statement = (select(Task).where(Task.project_id == project_id,
+                                    Task.name.ilike(f"%{name}%"))
                  .options(joinedload(Task.project),
                           joinedload(Task.collaborators)))
-    task = session.exec(statement).first()
+    task = session.exec(statement).unique().all()
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Task not found.")
