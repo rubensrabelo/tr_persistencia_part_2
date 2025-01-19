@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
 from sqlalchemy.orm import joinedload
 from starlette import status
@@ -64,6 +64,26 @@ async def find_all(skip: int = 0, limit: int = 10,
     statement = select(Collaborator).offset(skip).limit(limit)
     collaborators = session.exec(statement).all()
     return collaborators
+
+
+# Find tasks title by collaborator email
+@router.get("/tasks/search/email", response_model=list[CollaboratorWithTasks])
+async def find_tasks_by_colaborator_email(
+    email: str,
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, le=100),
+    session: Session = Depends(get_session)
+) -> list[CollaboratorWithTasks]:
+    statement = (select(Collaborator)
+                 .where(Collaborator.email.ilike(f"%{email}%"))
+                 .options(joinedload(Collaborator.tasks))
+                 .offset(offset)
+                 .limit(limit))
+    result = session.exec(statement).unique().all()
+    if not result:
+        raise HTTPException(status_code=404,
+                            detail="No collaborator found.")
+    return result
 
 
 # Listar todas as tarefas do colaborador
