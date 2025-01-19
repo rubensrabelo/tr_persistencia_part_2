@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import Session, select
 from sqlalchemy.sql import func
+from sqlalchemy import asc
 from starlette import status
 
 from database import get_session
@@ -36,7 +37,8 @@ async def total_task_by_project(min_tasks: int = 0,
     statement = (select(Project.name, count_tasks)
                  .join(Task, isouter=True)
                  .group_by(Project.id)
-                 .having(count_tasks >= min_tasks))
+                 .having(count_tasks >= min_tasks)
+                 .order_by(asc(count_tasks)))
     if max_tasks:
         statement = statement.having(count_tasks <= max_tasks)
     result = session.exec(statement).all()
