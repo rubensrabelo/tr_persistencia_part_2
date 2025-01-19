@@ -26,5 +26,6 @@ class Task(TaskBase, table=True):
         )
     collaborators: list["Collaborator"] = Relationship(
         back_populates="tasks",
-        link_model=Assignment
+        link_model=Assignment,
+        sa_relationship_kwargs={"cascade": "save-update, merge"}
         )
