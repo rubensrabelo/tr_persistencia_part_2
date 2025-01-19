@@ -7,7 +7,7 @@ from database import get_session
 from models.project import Project
 from models.task import Task
 from models.assignment import Assignment
-from models.statistic_dto import ItemCount, GeneralResponse
+from dto.statistic_dto import ItemCount, GeneralResponse
 
 router = APIRouter()
 

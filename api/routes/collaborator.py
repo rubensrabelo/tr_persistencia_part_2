@@ -5,7 +5,7 @@ from starlette import status
 
 from database import get_session
 from models.collaborator import Collaborator
-from models.collaborator_dto import CollaboratorWithTasks
+from dto.collaborator_dto import CollaboratorWithTasks
 from models.task import Task
 from models.assignment import Assignment
 

@@ -6,8 +6,10 @@ from starlette import status
 from datetime import datetime, timezone
 
 from database import get_session
-from models.project import Project, ProjecBaseWithTask
-from models.task import Task, TaskWithProjectAndCollaborator
+from models.project import Project
+from dto.project_dto import ProjecBaseWithTask
+from models.task import Task
+from dto.task_dto import TaskWithCollaborator
 
 router = APIRouter()
 
@@ -124,12 +126,12 @@ async def create_task_for_project(project_id: int,
 
 
 @router.get("/{project_id}/tasks/",
-            response_model=list[TaskWithProjectAndCollaborator])
+            response_model=list[TaskWithCollaborator])
 async def find_all_task_by_post_id(project_id: int,
                                    offset: int = Query(default=0, ge=0),
                                    limit: int = Query(default=10, le=100),
                                    session: Session = Depends(get_session)
-                                   ) -> list[TaskWithProjectAndCollaborator]:
+                                   ) -> list[TaskWithCollaborator]:
     project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -145,11 +147,11 @@ async def find_all_task_by_post_id(project_id: int,
 
 # Listar tasks por nome
 @router.get("/{project_id}/tasks/{name}",
-            response_model=list[TaskWithProjectAndCollaborator])
+            response_model=list[TaskWithCollaborator])
 async def find_task_by_id(project_id: int,
                           name: str,
                           session: Session = Depends(get_session)
-                          ) -> list[TaskWithProjectAndCollaborator]:
+                          ) -> list[TaskWithCollaborator]:
     project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
