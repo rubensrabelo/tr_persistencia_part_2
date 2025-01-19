@@ -20,13 +20,14 @@ class TaskBase(SQLModel):
 
 
 class Task(TaskBase, table=True):
-    project_id: int = Field(foreign_key="project.id")
+    project_id: int = Field(foreign_key="project.id", ondelete="CASCADE")
     project: "Project" = Relationship(
-        back_populates="tasks",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+        back_populates="tasks"
         )
     collaborators: list["Collaborator"] = Relationship(
         back_populates="tasks",
         link_model=Assignment,
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan", "single_parent": True
+            }
         )

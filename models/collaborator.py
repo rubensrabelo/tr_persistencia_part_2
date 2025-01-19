@@ -18,5 +18,7 @@ class Collaborator(CollaboratorBase, table=True):
     tasks: list["Task"] = Relationship(
         back_populates="collaborators",
         link_model=Assignment,
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan", "single_parent": True
+            }
         )
