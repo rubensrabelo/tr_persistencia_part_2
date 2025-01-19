@@ -58,10 +58,11 @@ async def add_collaborator_in_task(assignment: Assignment,
 
 
 @router.get("/", response_model=list[Collaborator])
-async def find_all(skip: int = 0, limit: int = 10,
+async def find_all(offset: int = Query(default=0, ge=0),
+                   limit: int = Query(default=10, le=100),
                    session: Session = Depends(get_session)
                    ) -> list[Collaborator]:
-    statement = select(Collaborator).offset(skip).limit(limit)
+    statement = select(Collaborator).offset(offset).limit(limit)
     collaborators = session.exec(statement).all()
     return collaborators
 
