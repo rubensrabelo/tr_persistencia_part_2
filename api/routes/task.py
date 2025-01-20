@@ -99,16 +99,15 @@ async def update_task(project_id: int,
 
 
 @router.delete("/project/{project_id}/task/{task_id}",
-               response_model=dict,
                status_code=status.HTTP_204_NO_CONTENT
                )
 async def delete_task(project_id: int,
                       task_id: int,
-                      session: Session = Depends(get_session)) -> dict:
+                      session: Session = Depends(get_session)
+                      ):
     task = session.get(Task, task_id)
     if not task or task.project_id != project_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Task not found")
     session.delete(task)
     session.commit()
-    return {"Message": "Task successfully deleted."}

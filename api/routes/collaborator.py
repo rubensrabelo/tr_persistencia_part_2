@@ -139,16 +139,14 @@ async def update(collaborator_id: int,
 
 
 @router.delete("/{collaborator_id}",
-               response_model=dict,
                status_code=status.HTTP_204_NO_CONTENT
                )
 async def delete(collaborator_id: int,
                  session: Session = Depends(get_session)
-                 ) -> dict:
+                 ):
     collaborator = session.get(Collaborator, collaborator_id)
     if not collaborator:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Collaborator not found")
     session.delete(collaborator)
     session.commit()
-    return {"Message": "Collaborator successfully deleted."}

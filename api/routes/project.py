@@ -118,15 +118,13 @@ async def update_project(project_id: int, update_project: Project,
 
 
 @router.delete("/{project_id}",
-               response_model=dict,
                status_code=status.HTTP_204_NO_CONTENT
                )
 async def delete_project(project_id: int,
-                         session: Session = Depends(get_session)) -> dict:
+                         session: Session = Depends(get_session)) -> None:
     project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Project not found.")
     session.delete(project)
     session.commit()
-    return {"Message": "Project successfully deleted."}
