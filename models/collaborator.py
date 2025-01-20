@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 class CollaboratorBase(SQLModel):
     id: int | None = Field(default=None, primary_key=True)
     name: str
-    email: str
+    email: str = Field(unique=True)
     function: str
 
 
