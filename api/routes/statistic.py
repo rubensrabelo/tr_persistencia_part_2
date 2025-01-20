@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import Session, select
 from sqlalchemy.sql import func
-from sqlalchemy import asc
+from sqlalchemy import desc
 from starlette import status
 
 from database import get_session
@@ -44,7 +44,7 @@ async def total_task_by_project(min_tasks: int = 0,
                  .join(Task, isouter=True)
                  .group_by(Project.id)
                  .having(count_tasks >= min_tasks)
-                 .order_by(asc(count_tasks)))
+                 .order_by(desc(count_tasks)))
     if max_tasks:
         statement = statement.having(count_tasks <= max_tasks)
     result = session.exec(statement).all()
@@ -66,10 +66,12 @@ async def total_task_by_project(min_tasks: int = 0,
 async def total_projects_by_status(status_project: str = None,
                                    session: Session = Depends(get_session)
                                    ) -> GeneralResponse:
+    count_id = func.count(Project.id)
     if status_project:
         statement = (
-            select(func.count(Project.id))
+            select(count_id)
             .where(Project.status == status_project)
+            .order_by(desc(count_id))
             )
         result = session.exec(statement).first()
         return GeneralResponse(
@@ -78,9 +80,11 @@ async def total_projects_by_status(status_project: str = None,
         )
     else:
         statement = (
-            select(Project.status, func.count(Project.id).label(
+            select(Project.status, count_id.label(
                 "status_count"))
-            .group_by(Project.status))
+            .group_by(Project.status)
+            .order_by(count_id)
+            )
         result = session.exec(statement).all()
         details = [
             ItemCount(name=row.status, count=row.status_count)
@@ -106,10 +110,12 @@ async def total_tasks_by_status_and_project_id(project_id: int,
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Project not found.")
+    count_id = func.count(Task.id)
     statement = (
-        select(Task.status, func.count(Task.id).label("task_count"))
+        select(Task.status, count_id.label("task_count"))
         .where(Task.project_id == project_id)
         .group_by(Task.status)
+        .order_by(desc(count_id))
     )
     result = session.exec(statement).all()
     details = [
@@ -143,6 +149,7 @@ async def total_collaborators_by_task_and_project(
         .filter(Project.id == project_id)
         .group_by(Task.id)
         .having(count_collaborators >= min_collaborators)
+        .order_by(desc(count_collaborators))
     )
 
     if max_collaborators:
