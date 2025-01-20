@@ -12,7 +12,10 @@ from models.assignment import Assignment
 router = APIRouter()
 
 
-@router.post("/", response_model=Collaborator)
+@router.post("/",
+             response_model=Collaborator,
+             status_code=status.HTTP_201_CREATED
+             )
 async def create(collaborator: Collaborator,
                  session: Session = Depends(get_session)) -> Collaborator:
     statement = select(Collaborator).where(Collaborator.email ==
@@ -27,7 +30,10 @@ async def create(collaborator: Collaborator,
     return collaborator
 
 
-@router.post("/assignments", response_model=dict)
+@router.post("/assignments",
+             response_model=dict,
+             status_code=status.HTTP_201_CREATED
+             )
 async def add_collaborator_in_task(assignment: Assignment,
                                    session: Session = Depends(get_session)
                                    ) -> dict:
@@ -57,7 +63,10 @@ async def add_collaborator_in_task(assignment: Assignment,
     }
 
 
-@router.get("/", response_model=list[Collaborator])
+@router.get("/",
+            response_model=list[Collaborator],
+            status_code=status.HTTP_200_OK
+            )
 async def find_all(offset: int = Query(default=0, ge=0),
                    limit: int = Query(default=10, le=100),
                    session: Session = Depends(get_session)
@@ -68,7 +77,10 @@ async def find_all(offset: int = Query(default=0, ge=0),
 
 
 # Find tasks title by collaborator email
-@router.get("/tasks/search/email", response_model=list[CollaboratorWithTasks])
+@router.get("/tasks/search/email",
+            response_model=list[CollaboratorWithTasks],
+            status_code=status.HTTP_200_OK
+            )
 async def find_tasks_by_colaborator_email(
     email: str,
     offset: int = Query(default=0, ge=0),
@@ -89,7 +101,10 @@ async def find_tasks_by_colaborator_email(
 
 # Listar todas as tarefas do colaborador
 # Listar os nomes de colaborador nascidos em determinado ano.
-@router.get("/{collaborator_id}", response_model=CollaboratorWithTasks)
+@router.get("/{collaborator_id}",
+            response_model=CollaboratorWithTasks,
+            status_code=status.HTTP_200_OK
+            )
 async def find_by_id(collaborator_id: int,
                      session: Session = Depends(get_session)
                      ) -> CollaboratorWithTasks:
@@ -102,7 +117,10 @@ async def find_by_id(collaborator_id: int,
     return collaborator
 
 
-@router.put("/{collaborator_id}", response_model=Collaborator)
+@router.put("/{collaborator_id}",
+            response_model=Collaborator,
+            status_code=status.HTTP_200_OK
+            )
 async def update(collaborator_id: int,
                  up_collaborator: Collaborator,
                  session: Session = Depends(get_session)
@@ -120,7 +138,10 @@ async def update(collaborator_id: int,
     return collaborator
 
 
-@router.delete("/{collaborator_id}", response_model=dict)
+@router.delete("/{collaborator_id}",
+               response_model=dict,
+               status_code=status.HTTP_204_NO_CONTENT
+               )
 async def delete(collaborator_id: int,
                  session: Session = Depends(get_session)
                  ) -> dict:

@@ -14,7 +14,10 @@ router = APIRouter()
 
 
 # Project
-@router.post("/", response_model=Project)
+@router.post("/",
+             response_model=Project,
+             status_code=status.HTTP_201_CREATED
+             )
 async def create_project(project: Project,
                          session: Session = Depends(get_session)) -> Project:
     session.add(project)
@@ -24,7 +27,10 @@ async def create_project(project: Project,
 
 
 # Listar todos os projetos
-@router.get("/", response_model=list[ProjecBaseWithTask])
+@router.get("/",
+            response_model=list[ProjecBaseWithTask],
+            status_code=status.HTTP_200_OK
+            )
 async def find_all_project(offset: int = Query(default=0, ge=0),
                            limit: int = Query(default=10, le=100),
                            session: Session = Depends(get_session)
@@ -41,7 +47,10 @@ async def find_all_project(offset: int = Query(default=0, ge=0),
 
 
 # Mostrar um projeto por id
-@router.get("/{project_id}", response_model=ProjecBaseWithTask)
+@router.get("/{project_id}",
+            response_model=ProjecBaseWithTask,
+            status_code=status.HTTP_200_OK
+            )
 async def find_project_by_id(project_id: int,
                              session: Session = Depends(get_session)
                              ) -> ProjecBaseWithTask:
@@ -55,7 +64,10 @@ async def find_project_by_id(project_id: int,
 
 
 # Listar os títulos de projetos cujo título contém determinada string.
-@router.get("/titles/name/search", response_model=list[str])
+@router.get("/titles/name/search",
+            response_model=list[str],
+            status_code=status.HTTP_200_OK
+            )
 async def search_project_titles(name: str,
                                 session: Session = Depends(get_session)
                                 ) -> list[str]:
@@ -70,7 +82,10 @@ async def search_project_titles(name: str,
 
 
 # Listar os títulos de projetos lançados em determinado ano.
-@router.get("/titles/{year}", response_model=list[str])
+@router.get("/titles/{year}",
+            response_model=list[str],
+            status_code=status.HTTP_200_OK
+            )
 async def project_title_by_year(year: int,
                                 session: Session = Depends(get_session)
                                 ) -> list[str]:
@@ -83,7 +98,10 @@ async def project_title_by_year(year: int,
     return titles
 
 
-@router.put("/{project_id}", response_model=Project)
+@router.put("/{project_id}",
+            response_model=Project,
+            status_code=status.HTTP_200_OK
+            )
 async def update_project(project_id: int, update_project: Project,
                          session: Session = Depends(get_session)) -> Project:
     project = session.get(Project, project_id)
@@ -99,7 +117,10 @@ async def update_project(project_id: int, update_project: Project,
     return project
 
 
-@router.delete("/{project_id}", response_model=dict)
+@router.delete("/{project_id}",
+               response_model=dict,
+               status_code=status.HTTP_204_NO_CONTENT
+               )
 async def delete_project(project_id: int,
                          session: Session = Depends(get_session)) -> dict:
     project = session.get(Project, project_id)

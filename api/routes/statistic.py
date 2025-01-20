@@ -15,7 +15,10 @@ router = APIRouter()
 
 # Project
 # Mostrar a quantidade total de projetos cadastrados.
-@router.get("/projects/total", response_model=ItemCount)
+@router.get("/projects/total",
+            response_model=ItemCount,
+            status_code=status.HTTP_200_OK
+            )
 async def total_registered_projects(session: Session = Depends(get_session)
                                     ) -> ItemCount:
     statement = (select(func.count(Project.id)))
@@ -28,7 +31,10 @@ async def total_registered_projects(session: Session = Depends(get_session)
 
 # Mostrar a quantidade de tarefas por projetos.
 # Mostrar projetos com a quantidade de tarefas estipulada.
-@router.get("/projects/total/tasks/filtered", response_model=GeneralResponse)
+@router.get("/projects/total/tasks/filtered",
+            response_model=GeneralResponse,
+            status_code=status.HTTP_200_OK
+            )
 async def total_task_by_project(min_tasks: int = 0,
                                 max_tasks: int | None = None,
                                 session: Session = Depends(get_session)
@@ -53,7 +59,10 @@ async def total_task_by_project(min_tasks: int = 0,
 
 
 # Mostrar a quantidade total de projetos cadastrados por status.
-@router.get("/projects/total/status", response_model=GeneralResponse)
+@router.get("/projects/total/status",
+            response_model=GeneralResponse,
+            status_code=status.HTTP_200_OK
+            )
 async def total_projects_by_status(status_project: str = None,
                                    session: Session = Depends(get_session)
                                    ) -> GeneralResponse:
@@ -86,7 +95,9 @@ async def total_projects_by_status(status_project: str = None,
 # Task
 # Mostrar a quantidade total de tarefas cadastrados por status e por projeto.
 @router.get("/projects/{project_id}/tasks/total/status",
-            response_model=GeneralResponse)
+            response_model=GeneralResponse,
+            status_code=status.HTTP_200_OK
+            )
 async def total_tasks_by_status_and_project_id(project_id: int,
                                                session: Session = Depends(
                                                    get_session)
@@ -114,7 +125,9 @@ async def total_tasks_by_status_and_project_id(project_id: int,
 # Mostrar a quantidade de colaborador por tarefas.
 # Mostrar tarefas com a quantidade de colaborador estipulada
 @router.get("/tasks/total/collaborators/filtered/projects/{project_id}",
-            response_model=GeneralResponse)
+            response_model=GeneralResponse,
+            status_code=status.HTTP_200_OK
+            )
 async def total_collaborators_by_task_and_project(
     project_id: int,
     min_collaborators: int = 0,

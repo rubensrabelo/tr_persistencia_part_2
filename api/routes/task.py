@@ -13,7 +13,9 @@ router = APIRouter()
 
 
 @router.post("/project/{project_id}",
-             response_model=Task)
+             response_model=Task,
+             status_code=status.HTTP_201_CREATED
+             )
 async def create_task_for_project(project_id: int,
                                   task: Task,
                                   session: Session = Depends(get_session)
@@ -30,7 +32,9 @@ async def create_task_for_project(project_id: int,
 
 
 @router.get("/project/{project_id}",
-            response_model=list[TaskWithCollaborator])
+            response_model=list[TaskWithCollaborator],
+            status_code=status.HTTP_200_OK
+            )
 async def find_all_task_by_post_id(project_id: int,
                                    offset: int = Query(default=0, ge=0),
                                    limit: int = Query(default=10, le=100),
@@ -51,7 +55,9 @@ async def find_all_task_by_post_id(project_id: int,
 
 # Listar tasks por nome
 @router.get("/project/{project_id}/tasks/{name}",
-            response_model=list[TaskWithCollaborator])
+            response_model=list[TaskWithCollaborator],
+            status_code=status.HTTP_200_OK
+            )
 async def find_task_by_id(project_id: int,
                           name: str,
                           session: Session = Depends(get_session)
@@ -71,7 +77,10 @@ async def find_task_by_id(project_id: int,
     return task
 
 
-@router.put("/project/{project_id}/task/{task_id}", response_model=Task)
+@router.put("/project/{project_id}/task/{task_id}",
+            response_model=Task,
+            status_code=status.HTTP_200_OK
+            )
 async def update_task(project_id: int,
                       task_id: int,
                       update_task: Task,
@@ -89,7 +98,10 @@ async def update_task(project_id: int,
     return task
 
 
-@router.delete("/project/{project_id}/task/{task_id}", response_model=dict)
+@router.delete("/project/{project_id}/task/{task_id}",
+               response_model=dict,
+               status_code=status.HTTP_204_NO_CONTENT
+               )
 async def delete_task(project_id: int,
                       task_id: int,
                       session: Session = Depends(get_session)) -> dict:
