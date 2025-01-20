@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlmodel import Session, select
 from sqlalchemy.sql import func
-from sqlalchemy import asc
 from sqlalchemy.orm import joinedload
 from starlette import status
 from datetime import datetime, timezone
@@ -39,7 +38,6 @@ async def find_all_project(offset: int = Query(default=0, ge=0),
         select(Project)
         .offset(offset)
         .limit(limit)
-        .order_by(asc(Project.created_at))
         .options(joinedload(Project.tasks))
         )
     projects = session.exec(statement).unique().all()
