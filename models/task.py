@@ -3,6 +3,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import TYPE_CHECKING
 from .collaborator import Collaborator
 from .assignment import Assignment
+from .enum.status_enum import StatusEnum
 
 if TYPE_CHECKING:
     from .project import Project
@@ -16,7 +17,7 @@ class TaskBase(SQLModel):
         default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc))
-    status: str
+    status: StatusEnum = Field(default=StatusEnum.NOT_DONE)
 
 
 class Task(TaskBase, table=True):
